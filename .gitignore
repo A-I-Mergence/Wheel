@@ -3,6 +3,7 @@
 projectfiles
 *.py*
 mbed-os*
+main*
 BUILD
 rc/
 motor/
