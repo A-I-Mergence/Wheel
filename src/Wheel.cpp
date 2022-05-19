@@ -7,49 +7,55 @@
 Wheel::Wheel(PinName pwm, PinName fwd, PinName rev, PinName EncA, PinName EncB)
 {
     _motor = new Motor(pwm, fwd, rev, EncA, EncB);       //pwm, fwd, rev, EncA, EncB
-    _rc = new RC(&W_Input, &W_Output, &W_Setpoint);
-    _tm = new Timer();
+    _rc = new RC(&W_Input_RC, &W_Output_RC, &W_Setpoint[1]);
+   
+    int dir = -1;                           //sens de direction du moteur par rapport a l'encodeur
+    int enco = 12;                          // nombre de tick sur l'encodeur
+    float ratio = 34.014;                   //rapport de réduction
+    _motor->MotorSetup(dir, enco, ratio);
+
+    _rc->SetMode(AUTOMATIC);
+    double a0=6.487*pow(10,5);              //coefficient de la fonction de transfert du moteur
+    double a1=5.322*pow(10,5);              //coefficient de la fonction de transfert du moteur
+    double a2=1;                            //coefficient de la fonction de transfert du moteur
+    double b0=2.466*pow(10,7)*100;          //coefficient de la fonction de transfert du moteur
+    _rc->ParaMotor(a0, a1, a2, b0);
 
     W_Tq = 0.01;
-    W_to2 = 0.005;
-    W_to = 0.1;
     W_vReelMotor = 0;
+    W_VitesseVoulue = 0;
 }
 
 void Wheel::SetSpeed(double VitesseVoulue){
     W_VitesseVoulue = VitesseVoulue;
 }
 
-void Wheel::FilterSpeed(){
-    W_vReelMotor = _motor->getSpeed();
-    W_vit_PB = ((W_vReelMotor*W_Tq)+(W_vit_last*W_to2))/(W_to2+W_Tq);
-    W_vit_last = W_vit_PB;
+float Wheel::FilterSpeed(float mesures){
+    float  to2 = 0.005;
+    float mesures_filter = ((mesures*W_Tq)+(mes_filter_last*to2))/(to2+W_Tq);
+    mes_filter_last = mesures_filter;
     W_count = 0;
+    return mesures_filter;
 }
 
-void Wheel::UpdateSpeed(){
-    int W_t0 = _tm->read_ms();
-    int W_dt = _tm->read_ms() - W_t0;
-    // if (W_dt >= W_Tq*1000) {
+void Wheel::UpdateSpeed(float dt){
+    W_Tq = dt;
+    int k=1;
+    float to = 0.1;
+    float mes = _motor->getSpeed();
+    float mes_filter = FilterSpeed(mes);
 
-        W_Setpoint = ((W_VitesseVoulue*W_Tq)+(W_in_last*W_to))/(W_to+W_Tq); //ammortissement de notre setpoint
-        if (W_Setpoint > W_VitesseVoulue) {
-        W_Setpoint = W_VitesseVoulue;
-        }
-        // else {W_Setpoint = W_Setpoint;}
+    W_Setpoint[k] = ((W_VitesseVoulue*W_Tq)+(W_Setpoint[k-1]*to))/(to+W_Tq); //ammortissement de notre setpoint
+    if (W_Setpoint[k] > W_VitesseVoulue) {
+        W_Setpoint[k] = W_VitesseVoulue;
+    }
+    
+    W_Input_RC = mes_filter;                                       //mise à jour de la vitesse réele
+    _rc->Regule(dt);                                               //calcul de la regulation de vitesse
+    W_cmd = W_Output_RC;                                           //vise a jour du pwm envoyé au moteur
+    _motor->speed(W_cmd);                                          //donner la commande au moteur
 
-        W_Input = W_vit_PB;                                          //mise à jour de la vitesse réele
-        _rc->Regule((float)W_dt/1000);                               //calcul de la regulation de vitesse
-        W_cmd = W_Output;                                            //vise a jour du pwm envoyé au moteur
-        _motor->speed(W_cmd);                                        //donner la commande au moteur
-        
-        printf("%f %f %f %d \r\n", W_Setpoint, W_vit_PB, W_cmd, W_dt);
+    printf("%f %f %f %.3f \r\n", W_Setpoint[k], mes_filter, W_cmd, dt);
 
-        _tm->reset();
-        W_t0 = _tm->read_ms();
-        W_in_last = W_Setpoint;  
-    // }
+    W_Setpoint[k-1] = W_Setpoint[k];
 }
-// float GetSpeed(){
-//     return _motor->speed(W_cmd); 
-// }
