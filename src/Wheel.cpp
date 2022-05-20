@@ -8,6 +8,7 @@ Wheel::Wheel(PinName pwm, PinName fwd, PinName rev, PinName EncA, PinName EncB)
 {
     _motor = new Motor(pwm, fwd, rev, EncA, EncB);       //pwm, fwd, rev, EncA, EncB
     _rc = new RC(&W_Input_RC, &W_Output_RC, &W_Setpoint[1]);
+    
    
     int dir = -1;                           //sens de direction du moteur par rapport a l'encodeur
     int enco = 12;                          // nombre de tick sur l'encodeur
@@ -24,6 +25,9 @@ Wheel::Wheel(PinName pwm, PinName fwd, PinName rev, PinName EncA, PinName EncB)
     W_Tq = 0.01;
     W_vReelMotor = 0;
     W_VitesseVoulue = 0;
+    ReguleActivated = false;
+
+    _t = new Ticker;
 }
 
 void Wheel::SetSpeed(double VitesseVoulue){
@@ -38,8 +42,16 @@ float Wheel::FilterSpeed(float mesures){
     return mesures_filter;
 }
 
-void Wheel::UpdateSpeed(float dt){
-    W_Tq = dt;
+void Wheel::StartRegule(){
+    ReguleActivated = true;
+    _t->attach(callback(this, &Wheel::UpdateSpeed), W_Tq);
+}
+void Wheel::StopRegule(){
+    ReguleActivated = false;
+    _t->detach();
+}
+
+void Wheel::UpdateSpeed(){
     int k=1;
     float to = 0.1;
     float mes = _motor->getSpeed();
@@ -51,11 +63,17 @@ void Wheel::UpdateSpeed(float dt){
     }
     
     W_Input_RC = mes_filter;                                       //mise à jour de la vitesse réele
-    _rc->Regule(dt);                                               //calcul de la regulation de vitesse
+    _rc->Regule(W_Tq);                                               //calcul de la regulation de vitesse
     W_cmd = W_Output_RC;                                           //vise a jour du pwm envoyé au moteur
     _motor->speed(W_cmd);                                          //donner la commande au moteur
 
-    printf("%f %f %f %.3f \r\n", W_Setpoint[k], mes_filter, W_cmd, dt);
+    // printf("%f %f %f %.3f \r\n", W_Setpoint[k], mes_filter, W_cmd, dt);
 
     W_Setpoint[k-1] = W_Setpoint[k];
+}
+
+void Wheel::SetPWM(float pwm){
+    if (ReguleActivated) return;
+    pwm = pwm > 1 ? 1 : (pwm < -1 ? -1 : pwm);
+    _motor->speed(pwm);    
 }

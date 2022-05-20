@@ -12,11 +12,17 @@ public:
 
     float FilterSpeed(float);
 
-    void UpdateSpeed(float dt);
+    void StartRegule();
+    void StopRegule();
+
+    void UpdateSpeed();
+
+    void SetPWM(float);
 
 private:
     Motor *_motor;
     RC *_rc;
+    Ticker *_t;
 
     double W_Setpoint[2];
     double W_Input_RC;
@@ -24,11 +30,13 @@ private:
     double W_VitesseVoulue;
     float W_Vitesse;
     float W_cmd;
+    float _cmd;
 
     float W_Tq;
     double  W_vReelMotor;
     float mes_filter_last;
     double W_count;
 
+    bool ReguleActivated;
+
 };
-// #endif

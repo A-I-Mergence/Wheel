@@ -1,5 +1,5 @@
 
-// Code de l'utilisation des roues sans utlisant la réguation RC
+// Code de l'utilisation des roues en utlisant la réguation RC
 
 #include "mbed.h"
 #include "Motor.h"
@@ -14,21 +14,20 @@ float _Tq = 0.01;                       //fréquence d'échantillonnage pour upd
 Ticker t;
 Timer tm;
 
-float CommandePWM = 0.5;
+double VitesseVoulue = 30;
 
 int main() {
-
-    wheel.StopRegule();
+    
+    wheel.StartRegule();
     tm.start();
     int t0 = tm.read_ms();
 
     while (1) {
+        wheel.SetSpeed(VitesseVoulue);
         int dt = tm.read_ms() - t0;
         if (dt >= _Tq*1000) {
             tm.reset();
             t0 = tm.read_ms();
-            // si nous ne sommes pas dans le mode StopRegule la commande suivante ne pourra pas etre executé
-            wheel.SetPWM(CommandePWM);
         }       
     }
 }
