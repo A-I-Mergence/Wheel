@@ -59,7 +59,7 @@ int main() {
    
     // myPID.SetMode(AUTOMATIC);
     myRC.SetMode(AUTOMATIC);
-    myRC.ParaMotor(a0, a1, a2, b0);
+    myRC.SetParaMotor(a0, a1, a2, b0);
 
     printf("Temps / Vitesse\r\n");
     motor.speed(0); 
