@@ -11,51 +11,56 @@ public:
     
     Wheel(PinName pwm, PinName fwd, PinName rev, PinName EncA, PinName EncB);
 
-    void SetSpeedRPM(double VitesseVoulue);
+    void SetSpeed(float VitesseVoulue);
+    float getSpeed(){ return _motor->getSpeed(); }
 
     float FilterSpeed(float);
 
     void StartRegule();
     void StopRegule();
 
-    void SetAcceleration(float);
-    void Acceleration();
-    void SetFreinage(float);
-    void Freinage();
-
     void UpdateSpeed();
 
     void SetPWM(float);
 
-    float GetCommande();
+    void setAcceleration(float to);
+    void setBraking(float to);
 
-    float GetSpeed();
 
-    void Stop();
+
+    float getCommadePWM(){ return W_cmd; }
+
+    float getFilteredMeasurement(){ return filteredMeasurement;}
+    float getResultatLissage(){ return W_Setpoint[1]; }
+
+    float getPreCommande(){ return _rc->getPreCommande(); }
+    float getError(){ return _rc->getError(); }
+    float getRC(){ return _rc->getRC(); }
+    float getRC1s(){return _rc->getRC1s(); }
 
 private:
     Motor *_motor;
     RC *_rc;
     Ticker *_t;
 
-    double W_Setpoint[2];
-    double W_Input_RC;
-    double W_Output_RC;
-    double W_VitesseVoulue;
+    float _toAcceleration, _toBraking;
+
+    float W_Setpoint[2];
+    float W_SetpointRC;
+    float W_Input_RC;
+    float W_Output_RC;
+    float W_VitesseVoulue;
     float W_Vitesse;
     float W_cmd;
     float _cmd;
 
     float W_Tq;
-    double W_vReelMotor;
+    float  W_vReelMotor;
+    float filteredMeasurement;
     float mes_filter_last;
-    double W_count;
+    float W_count;
 
     bool ReguleActivated;
-
-    int _k;
-    float _to_acc;
-    float _to_fre;
 
 };
 #endif

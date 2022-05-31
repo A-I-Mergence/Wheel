@@ -1,5 +1,5 @@
 
-// Code de l'utilisation des roues sans utlisant la réguation RC
+// Code de l'utilisation des roues sans utliser la réguation RC
 
 #include "mbed.h"
 #include "Motor.h"

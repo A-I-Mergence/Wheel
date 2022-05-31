@@ -35,12 +35,12 @@ void myComponent::__on__(std::string event_name, std::map<std::string, HydraData
 HydraData* myComponent::move(std::vector<HydraData*> parameters)
 {
     int param_1 = parameters[0]->get<int>();
-    _wheel->SetSpeedRPM(param_1);
+    _wheel->SetSpeed(param_1);
     return new HydraData("vitesse: " +to_string(param_1));
 }
 
 HydraData* myComponent::stop(std::vector<HydraData*> parameters){
     _des_spd = 0;
-    _wheel->SetSpeedRPM(_des_spd);
+    _wheel->SetSpeed(_des_spd);
     return NULL;
 }

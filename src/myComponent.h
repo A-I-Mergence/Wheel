@@ -10,7 +10,6 @@
 #include "Wheel.h"
 
 
-
 class myComponent: public HydraComponent{
     public:
         myComponent();

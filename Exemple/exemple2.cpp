@@ -23,7 +23,7 @@ int main() {
     int t0 = tm.read_ms();
 
     while (1) {
-        wheel.SetSpeedRPM(VitesseVoulue);
+        wheel.SetSpeed(VitesseVoulue);
         int dt = tm.read_ms() - t0;
         if (dt >= _Tq*1000) {
             tm.reset();
