@@ -57,11 +57,13 @@ float Wheel::FilterSpeed(float mesures){
 }
 
 void Wheel::StartRegule(){
+    if(ReguleActivated) return;
     ReguleActivated = true;
     _t->attach(callback(this, &Wheel::UpdateSpeed), W_Tq);
 }
 
 void Wheel::StopRegule(){
+    if (!ReguleActivated) return;
     ReguleActivated = false;
     _t->detach();
 }
